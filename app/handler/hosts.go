@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.marqeta.com/ecray/avdb/app/model"
@@ -30,12 +30,8 @@ func CreateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	/* Debugging
-	log.Printf("Struct decode %+v\n", host.Data)
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-	enc.Encode(host)
-	*/
+	// Debugging
+	// debugBody(host)
 
 	if err := db.Save(&host).Error; err != nil {
 		switch {
@@ -54,14 +50,9 @@ func GetAllHosts(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	db.LogMode(false)
 
+	// if query params found, build query
 	if len(query) > 0 {
-		q := ""
-		for k, v := range query {
-			//fmt.Println("Query: ", k, v[0])
-			// prep query, may want string builder
-			q = fmt.Sprintf("data->> '%s' = '%s'", k, v[0])
-		}
-		db.Where(q).Find(&hosts)
+		db.Where(queryBuilder(query)).Find(&hosts)
 	} else {
 		db.Find(&hosts)
 	}

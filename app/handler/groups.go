@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.marqeta.com/ecray/avdb/app/model"
@@ -34,11 +34,8 @@ func CreateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	/* Debugging
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-	enc.Encode(group)
-	*/
+	// Debugging
+	// debugBody(group)
 
 	if err := db.Save(&group).Error; err != nil {
 		switch {
@@ -58,18 +55,9 @@ func GetAllGroups(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	//set to true to log query
 	db.LogMode(false)
 
+	// if query params found, build query
 	if len(query) > 0 {
-		q := ""
-		for k, v := range query {
-			//log.Println("Query: ", k, v[0])
-			// prep query, may want string builder
-			if k == "hosts" {
-				q = fmt.Sprintf("'%s' = ANY(%s)", v[0], k)
-			} else {
-				q = fmt.Sprintf("data->> '%s' = '%s'", k, v[0])
-			}
-		}
-		db.Where(q).Find(&groups)
+		db.Where(queryBuilder(query)).Find(&groups)
 	} else {
 		db.Find(&groups)
 	}
@@ -123,7 +111,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// debug request body
-	debugBody(data)
+	//debugBody(data)
 
 	// convert original group data to map to iterate
 	origin := make(map[string]interface{})
