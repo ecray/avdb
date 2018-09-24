@@ -1,7 +1,6 @@
 package app
 
 import (
-	_ "fmt"
 	"log"
 	"net/http"
 	"os"
@@ -56,6 +55,23 @@ func (a *App) setRouters() {
 	a.Put("/groups/{name}", mw(a.UpdateGroup, a.DB))
 	a.Delete("/groups/{name}", mw(a.DeleteGroup, a.DB))
 }
+
+/*
+func Server(c *cli.Context) {
+	addr := c.String("addr")
+	port := c.String("port")
+
+	// check socket in use
+	_, err := net.Listen("tcp", fmt.Sprintf("%s:%s", addr, port))
+	if err != nil {
+		log.Fatal("Port already in use... SCRAM!!")
+	}
+
+	a := &App{}
+	a.Initialize()
+	a.Run(fmt.Sprintf("%s:%s", addr, port))
+}
+*/
 
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("GET")

@@ -13,13 +13,13 @@ type Auth struct {
 
 type Host struct {
 	gorm.Model
-	Name string         `gorm:"unique;not null" json:"host"`
+	Name string         `gorm:"column:host;unique;not null" json:"host"`
 	Data postgres.Jsonb `json:"data"`
 }
 
 type Group struct {
 	gorm.Model
-	Name  string         `gorm:"unique;not null" json:"group"`
+	Name  string         `gorm:"column:group;unique;not null" json:"group"`
 	Data  postgres.Jsonb `json:"data"`
 	Hosts pq.StringArray `gorm:"type:varchar(256)[]" json:"hosts"`
 }

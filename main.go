@@ -1,38 +1,58 @@
 package main
 
 import (
+	"fmt"
+	"github.com/urfave/cli"
 	"github.marqeta.com/ecray/avdb/app"
+	"log"
+	"net"
+	"os"
 )
 
 func main() {
-	app := &app.App{}
-	app.Initialize()
-	app.Run(":3000")
+	app := cli.NewApp()
+	app.Name = "avdb"
+	app.Usage = "Ansible Variables Database"
+	app.Version = "0.0.1"
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Eric Raymond",
+			Email: "eraymond@marqeta.com",
+		},
+	}
+	app.Action = server
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			EnvVar: "AVDB_ADDR",
+			Name:   "addr",
+			Usage:  "IP to bind",
+			Value:  "127.0.0.1",
+		},
+		cli.StringFlag{
+			EnvVar: "AVDB_PORT",
+			Name:   "port",
+			Usage:  "Port to bind socket",
+			Value:  "3000",
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
-
-/*
-var flags = []cli.Flag{
-    cli.StringFlag{
-        EnvVar: "AVDB_ADDR",
-        Name:   "addr",
-        Usage:  "IP to bind",
-        Value:  "0.0.0.0",
-    },
-    cli.StringFlag{
-        EnvVar: "AVDB_PORT",
-        Name:   "port",
-        Usage:  "Port to bind socket",
-        Value:  "8080",
-    }
-
 
 func server(c *cli.Context) {
-    addr := c.String("addr")
-    port := c.String("port")
+	conn := fmt.Sprintf("%s:%s", c.String("addr"), c.String("port"))
 
-    // check socket in use
-    conn, err := net.Listen("tcp", fmt.Sprintf("%s:%s", addr, port))
-    if err != nil {
-        log.Fatal("Port already in use... SCRAM!!")
+	// check socket in use
+	_, err := net.Listen("tcp", conn)
+	if err != nil {
+		log.Fatal("Port already in use... SCRAM!!")
+	}
+
+	a := &app.App{}
+	a.Initialize()
+	log.Printf("Running on %s", conn)
+	a.Run(conn)
 }
-*/
