@@ -52,8 +52,9 @@ func CreateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 func GetAllGroups(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	groups := []model.Group{}
 	query := r.URL.Query()
+	log.Println(query)
 	//set to true to log query
-	db.LogMode(false)
+	db.LogMode(true)
 
 	// if query params found, build query
 	if len(query) > 0 {

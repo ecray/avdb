@@ -31,13 +31,12 @@ func queryBuilder(strs url.Values) string {
 		// if query is more than one key append, or seek operator
 		if i >= 1 {
 			sb.WriteString(" AND ")
-			//fmt.Printf(" AND ")
 		}
 
+		// if query is hosts, check hosts column, else check data
 		if k == "hosts" {
 			sb.WriteString(fmt.Sprintf("'%s' = ANY(%s)", v[0], k))
-		} else {
-			//fmt.Printf("data->>'%s' = '%s'\n", k, v[0])
+		} else if k != "op" {
 			sb.WriteString(fmt.Sprintf("data->>'%s' = '%s'", k, v[0]))
 		}
 		i++

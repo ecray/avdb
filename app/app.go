@@ -30,48 +30,33 @@ func (a *App) Initialize() {
 
 	// Generate schema
 	a.DB = model.DBMigrate(db)
+	// Populate initial token and log
 	model.PopulateAuth(a.DB)
+
 	// Create new router
 	a.Router = mux.NewRouter()
+
 	// Set handlers
 	a.setRouters()
 }
 
 func (a *App) setRouters() {
-	// set up middleware
-	//mw := ChainMiddleware(BasicAuth)
-	mw := middleware.BasicAuth
+	// set up auth middleware
+	mwauth := middleware.BasicAuth
 
 	// Routing for host functions
 	a.Get("/hosts", a.GetAllHosts)
 	a.Get("/hosts/{name}", a.GetHost)
-	a.Post("/hosts/{name}", mw(a.CreateHost, a.DB))
-	a.Put("/hosts/{name}", mw(a.UpdateHost, a.DB))
-	a.Delete("/hosts/{name}", mw(a.DeleteHost, a.DB))
+	a.Post("/hosts/{name}", mwauth(a.CreateHost, a.DB))
+	a.Put("/hosts/{name}", mwauth(a.UpdateHost, a.DB))
+	a.Delete("/hosts/{name}", mwauth(a.DeleteHost, a.DB))
 	// Routing for group functions
 	a.Get("/groups", a.GetAllGroups)
 	a.Get("/groups/{name}", a.GetGroup)
-	a.Post("/groups/{name}", mw(a.CreateGroup, a.DB))
-	a.Put("/groups/{name}", mw(a.UpdateGroup, a.DB))
-	a.Delete("/groups/{name}", mw(a.DeleteGroup, a.DB))
+	a.Post("/groups/{name}", mwauth(a.CreateGroup, a.DB))
+	a.Put("/groups/{name}", mwauth(a.UpdateGroup, a.DB))
+	a.Delete("/groups/{name}", mwauth(a.DeleteGroup, a.DB))
 }
-
-/*
-func Server(c *cli.Context) {
-	addr := c.String("addr")
-	port := c.String("port")
-
-	// check socket in use
-	_, err := net.Listen("tcp", fmt.Sprintf("%s:%s", addr, port))
-	if err != nil {
-		log.Fatal("Port already in use... SCRAM!!")
-	}
-
-	a := &App{}
-	a.Initialize()
-	a.Run(fmt.Sprintf("%s:%s", addr, port))
-}
-*/
 
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("GET")
