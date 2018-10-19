@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/lib/pq"
+	"log"
 )
 
 type Auth struct {
@@ -31,7 +32,22 @@ func DBMigrate(db *gorm.DB) *gorm.DB {
 }
 
 func PopulateAuth(db *gorm.DB) {
-	auth := Auth{Token: "XxXtestXxX"}
-	db.NewRecord(&auth)
-	db.Create(&auth)
+	auth := Auth{}
+
+	// Create token
+	token, err := GenerateRandomString(32)
+	if err != nil {
+		log.Println("Failure generating random token")
+	}
+
+	// Check for exisitng token, or create new
+	db.First(&auth)
+	if len(auth.Token) > 1 {
+		log.Println("Existing token from DB:", auth.Token)
+	} else {
+		auth = Auth{Token: token}
+		db.NewRecord(&auth)
+		db.Create(&auth)
+		log.Println("Initial token:", token)
+	}
 }
