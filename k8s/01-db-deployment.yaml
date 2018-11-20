@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: avdb-pgsql
+  namespace: default
+  labels:
+    app: avdb-pgsql
+spec:
+  ports:
+  - name: avdb-pgsql
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+  selector:
+    app: avdb-pgsql
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.15.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: avdb-pgsql
+  name: avdb-pgsql
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: avdb-pgsql
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: avdb-pgsql
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: avdb
+        - name: POSTGRES_PASSWORD
+          value: avdb
+        - name: POSTGRES_USER
+          value: avdb
+        image: postgres:9.6-alpine
+        name: avdb-pgsql
+        resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,26 @@
+workspace:
+  base: /go
+  path: src/github.com/ecray/avdb-go
+
+pipeline:
+  test:
+    image: golang:1.8
+    commands:
+      - go build -v
+      - go test -cover $(go list ./... | grep -v /vendor/)
+  
+  build:
+    image: golang:1.8
+    commands:
+      - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o release/avdb
+
+  publish:
+    image: plugins/docker
+    repo: my.docker-repo.com/avdb-go
+    registry: my.docker-repo.com
+    secrets: [ docker_username, docker_password ]
+    tags:
+      - ${DRONE_TAG}
+      - latest
+    when:
+      event: tag

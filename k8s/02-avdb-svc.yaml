@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: avdb-app
+  name: avdb-svc
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  ports:
+  - name: avdb-svc
+    port: 80
+    targetPort: 3333
+  selector:
+    app: avdb-app
+  type: LoadBalancer
+status:
+  loadBalancer: {}

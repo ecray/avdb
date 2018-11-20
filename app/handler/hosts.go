@@ -3,9 +3,9 @@ package handler
 import (
 	"encoding/json"
 	_ "fmt"
+	"github.com/ecray/avdb/app/model"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"github.marqeta.com/ecray/avdb/app/model"
 	"io"
 	"log"
 	"net/http"

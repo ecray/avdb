@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/ecray/avdb/app"
 	"github.com/urfave/cli"
-	"github.marqeta.com/ecray/avdb/app"
 	"log"
 	"net"
 	"os"
@@ -17,7 +17,7 @@ func main() {
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Eric Raymond",
-			Email: "eraymond@marqeta.com",
+			Email: "ecraymond@gmail.com",
 		},
 	}
 	app.Action = server

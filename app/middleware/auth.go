@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"github.com/ecray/avdb/app/model"
 	"github.com/jinzhu/gorm"
-	"github.marqeta.com/ecray/avdb/app/model"
 	"log"
 	"net/http"
 )

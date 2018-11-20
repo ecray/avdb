@@ -8,9 +8,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
-	"github.marqeta.com/ecray/avdb/app/handler"
-	"github.marqeta.com/ecray/avdb/app/middleware"
-	"github.marqeta.com/ecray/avdb/app/model"
+	"github.com/ecray/avdb/app/handler"
+	"github.com/ecray/avdb/app/middleware"
+	"github.com/ecray/avdb/app/model"
 )
 
 type App struct {

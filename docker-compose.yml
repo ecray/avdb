@@ -2,7 +2,9 @@ version: '3'
 
 services:
   avdb:
-    image: docker.marqeta.com/mq/devops/avdb:latest
+    build:
+      context: .
+    image: avdb:latest
     depends_on:
     - db
     ports:

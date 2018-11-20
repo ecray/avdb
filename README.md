@@ -3,7 +3,7 @@
 # Ansible Variables Database - Go Edition
 
 # Build binary
-> go get -u github.marqeta.com/ecray/avdb-go
+> go get -u github.com/ecray/avdb-go
 
 # Setup environment variables for backend connection
 > echo "export DB_HOST=127.0.0.1 \\
@@ -15,3 +15,7 @@
 > source env.sh
 
 > ./avdb
+
+# References
+http://www.golangprograms.com/advance-programs/golang-restful-api-using-grom-and-gorilla-mux.html
+https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand
