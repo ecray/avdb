@@ -169,7 +169,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func getGroupOr404(db *gorm.DB, name string, w http.ResponseWriter, r *http.Request) *model.Group {
 	group := model.Group{}
-	err := db.First(&group, model.Group{Name: name}).Error
+	err := db.Where(model.Group{Name: name}).Find(&group).Error
 	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil

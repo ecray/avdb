@@ -4,7 +4,7 @@ services:
   avdb:
     build:
       context: .
-    image: avdb:latest
+    image: docker.marqeta.com/mq/devops/avdb
     depends_on:
     - db
     ports:
