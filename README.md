@@ -1,18 +1,18 @@
-# avdb-go
+# avdb
 
-# Ansible Variables Database - Go Edition
+# Ansible Variables Database
 
 # Build binary
-> go get -u github.com/ecray/avdb-go
+> go get -u github.com/ecray/avdb
 
 # Setup environment variables for backend connection
 > echo "export DB_HOST=127.0.0.1 \\
         export DB_PORT=5432 \\
         export DB_NAME=avdb \\
         export DB_USER=avdb \\
-        export DB_PASS=avdb" >> env.sh
+        export DB_PASS=avdb" >> source_dev.sh
 
-> source env.sh
+> source_dev.sh
 
 > ./avdb
 
