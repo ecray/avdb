@@ -3,16 +3,17 @@
 # Ansible Variables Database
 
 # Build binary
-> go get -u github.com/ecray/avdb
-
-> GOOS=linux go build -o release/avdb .
-> docker build -t avdb-dev .
-> docker-compose up
+```
+$ GOOS=linux go build -o release/avdb .
+$ docker build -t avdb-dev .
+$ docker-compose up
+```
 
 ## docker-compose should output initial token
-
-> curl -s -X POST -H "Auth-Token: $AVDB_TOKEN" http://127.0.0.1:3333/api/v1/hosts/tacotruck01 -d '{"comidas":"tacos"}' | jq '.'
-> curl -s -X GET http://127.0.0.1:3333/api/v1/hosts | jq '.'
+```
+$ curl -s -X POST -H "Auth-Token: $AVDB_TOKEN" http://127.0.0.1:3333/api/v1/hosts/tacotruck01 -d '{"comidas":"tacos"}' | jq '.'
+$ curl -s -X GET http://127.0.0.1:3333/api/v1/hosts | jq '.'
+```
 
 # References
 ```
