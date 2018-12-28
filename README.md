@@ -9,7 +9,7 @@ $ ls -l release/avdb
 ```
 ## Build container and run in docker compose
 ```
-$ make release-linux
+$ make dev-env
 ```
 
 ## docker-compose should output initial token
