@@ -1,11 +1,12 @@
 package app
 
 import (
-	//"log"
+	"log"
 	"net/http"
 	"os"
+	"time"
 
-	goh "github.com/gorilla/handlers"
+	gh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
@@ -19,19 +20,31 @@ type App struct {
 	DB     *gorm.DB
 }
 
-func (a *App) Initialize() {
-	// set db string from os.Env
-	db, err := gorm.Open(
-		"postgres",
-		os.ExpandEnv("host=${DB_HOST} port=5432 user=${DB_USER} dbname=${DB_NAME} sslmode=disable password=${DB_PASS}"))
+func (a *App) Run(host string) {
+	var db *gorm.DB
+	var err error
+	var dur int = 5
 
-	if err != nil {
-		panic("Could not connect database")
+	// Set up db connection with retries
+	connString := os.ExpandEnv("host=${DB_HOST} port=${DB_PORT} user=${DB_USER} dbname=${DB_NAME} sslmode=disable password=${DB_PASS}")
+	// DB connectivity check every 5 seconds, total 25 seconds
+	for i := 5; i > 0; i-- {
+		db, err = gorm.Open("postgres", connString)
+		if err != nil && i == 0 {
+			panic("Connection failed after retries, abandoning.")
+		} else if err != nil {
+			log.Printf("Connection Failed...Retries %d left - sleeping %d seconds..", i, dur)
+			time.Sleep(time.Duration(dur) * time.Second)
+		}
 	}
+	defer db.Close()
 
 	// Generate schema
+	log.Println("Auto-migrating schema...")
 	a.DB = model.DBMigrate(db)
+
 	// Populate initial token and log
+	log.Println("Checking token credential..")
 	model.PopulateAuth(a.DB)
 
 	// Create new router
@@ -39,6 +52,10 @@ func (a *App) Initialize() {
 
 	// Set handlers
 	a.setRouters()
+
+	// Log and Serve
+	logged := gh.LoggingHandler(os.Stdout, a.Router)
+	http.ListenAndServe(host, logged)
 }
 
 func (a *App) setRouters() {
@@ -115,11 +132,4 @@ func (a *App) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	handler.UpdateGroup(a.DB, w, r)
-}
-
-// App run
-func (a *App) Run(host string) {
-	logged := goh.LoggingHandler(os.Stdout, a.Router)
-	//http.ListenAndServe(host, a.Router)
-	http.ListenAndServe(host, logged)
 }

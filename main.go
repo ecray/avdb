@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "avdb"
 	app.Usage = "Ansible Variables Database"
-	app.Version = "0.1.0"
+	app.Version = "0.1.2"
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Eric Raymond",
@@ -45,14 +45,13 @@ func main() {
 func server(c *cli.Context) {
 	conn := fmt.Sprintf("%s:%s", c.String("addr"), c.String("port"))
 
-	// check socket in use
+	// Check socket in use
 	_, err := net.Listen("tcp", conn)
 	if err != nil {
 		log.Fatal("Port already in use... SCRAM!!")
 	}
 
 	a := &app.App{}
-	a.Initialize()
-	log.Printf("Running on %s", conn)
+	log.Println("Running on %s", conn)
 	a.Run(conn)
 }

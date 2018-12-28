@@ -2,11 +2,14 @@
 
 # Ansible Variables Database
 
-# Build binary
+## Build binary
 ```
-$ GOOS=linux go build -o release/avdb .
-$ docker build -t avdb-dev .
-$ docker-compose up
+$ make build
+$ ls -l release/avdb
+```
+## Build container and run in docker compose
+```
+$ make release-linux
 ```
 
 ## docker-compose should output initial token

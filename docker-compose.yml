@@ -4,7 +4,7 @@ services:
   avdb:
     build:
       context: .
-    image: avdb-dev:latest
+    image: avdb:latest
     depends_on:
     - db
     ports:
