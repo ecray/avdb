@@ -5,17 +5,17 @@
 # Build binary
 > go get -u github.com/ecray/avdb
 
-# Setup environment variables for backend connection
-> echo "export DB_HOST=127.0.0.1 \\
-        export DB_PORT=5432 \\
-        export DB_NAME=avdb \\
-        export DB_USER=avdb \\
-        export DB_PASS=avdb" >> source_dev.sh
+> GOOS=linux go build -o release/avdb .
+> docker build -t avdb-dev .
+> docker-compose up
 
-> source_dev.sh
+## docker-compose should output initial token
 
-> ./avdb
+> curl -s -X POST -H "Auth-Token: $AVDB_TOKEN" http://127.0.0.1:3333/api/v1/hosts/tacotruck01 -d '{"comidas":"tacos"}' | jq '.'
+> curl -s -X GET http://127.0.0.1:3333/api/v1/hosts | jq '.'
 
 # References
+```
 http://www.golangprograms.com/advance-programs/golang-restful-api-using-grom-and-gorilla-mux.html
 https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand
+```
