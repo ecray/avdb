@@ -19,6 +19,8 @@ func BasicAuth(next http.HandlerFunc, db *gorm.DB) http.HandlerFunc {
 		err := db.First(&auth, model.Auth{Token: token}).Error
 		if auth.Token == token {
 			next.ServeHTTP(w, r)
+		} else if token == "" {
+			http.Error(w, "Token missing", http.StatusUnauthorized)
 		} else if err != nil {
 			http.Error(w, "Error", http.StatusForbidden)
 		} else {

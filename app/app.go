@@ -1,10 +1,11 @@
 package app
 
 import (
-	"log"
+	//"log"
 	"net/http"
 	"os"
 
+	goh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
@@ -45,17 +46,17 @@ func (a *App) setRouters() {
 	mwauth := middleware.BasicAuth
 
 	// Routing for host functions
-	a.Get("/hosts", a.GetAllHosts)
-	a.Get("/hosts/{name}", a.GetHost)
-	a.Post("/hosts/{name}", mwauth(a.CreateHost, a.DB))
-	a.Put("/hosts/{name}", mwauth(a.UpdateHost, a.DB))
-	a.Delete("/hosts/{name}", mwauth(a.DeleteHost, a.DB))
+	a.Get("/api/v1/hosts", a.GetAllHosts)
+	a.Get("/api/v1/hosts/{name}", a.GetHost)
+	a.Post("/api/v1/hosts/{name}", mwauth(a.CreateHost, a.DB))
+	a.Put("/api/v1/hosts/{name}", mwauth(a.UpdateHost, a.DB))
+	a.Delete("/api/v1/hosts/{name}", mwauth(a.DeleteHost, a.DB))
 	// Routing for group functions
-	a.Get("/groups", a.GetAllGroups)
-	a.Get("/groups/{name}", a.GetGroup)
-	a.Post("/groups/{name}", mwauth(a.CreateGroup, a.DB))
-	a.Put("/groups/{name}", mwauth(a.UpdateGroup, a.DB))
-	a.Delete("/groups/{name}", mwauth(a.DeleteGroup, a.DB))
+	a.Get("/api/v1/groups", a.GetAllGroups)
+	a.Get("/api/v1/groups/{name}", a.GetGroup)
+	a.Post("/api/v1/groups/{name}", mwauth(a.CreateGroup, a.DB))
+	a.Put("/api/v1/groups/{name}", mwauth(a.UpdateGroup, a.DB))
+	a.Delete("/api/v1/groups/{name}", mwauth(a.DeleteGroup, a.DB))
 }
 
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -118,5 +119,7 @@ func (a *App) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 
 // App run
 func (a *App) Run(host string) {
-	log.Fatal(http.ListenAndServe(host, a.Router))
+	logged := goh.LoggingHandler(os.Stdout, a.Router)
+	//http.ListenAndServe(host, a.Router)
+	http.ListenAndServe(host, logged)
 }

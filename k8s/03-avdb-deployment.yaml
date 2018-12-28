@@ -2,24 +2,35 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: avdb-app
-  name: avdb-app
+    app: avdb
+  name: avdb
+  namespace: avdb
 spec:
   replicas: 1
-  strategy: {}
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
-        app: avdb-app
+        app: avdb
     spec:
       containers:
-      - env:
+      - name: avdb
+        image: docker.marqeta.com/mq/devops/avdb:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3333
+        env:
         - name: AVDB_ADDR
           value: 0.0.0.0
         - name: AVDB_PORT
           value: "3333"
         - name: DB_HOST
-          value: avdb-pgsql.default.svc.cluster.local
+          value: postgres.avdb.svc.cluster.local
         - name: DB_NAME
           value: avdb
         - name: DB_PASS
@@ -28,10 +39,6 @@ spec:
           value: "5432"
         - name: DB_USER
           value: avdb
-        image: my.docker-repo.com/avdb:latest
-        name: avdb-app
-        ports:
-        - containerPort: 3333
         resources: {}
       restartPolicy: Always
 status: {}

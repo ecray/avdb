@@ -54,7 +54,7 @@ func GetAllGroups(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	log.Println(query)
 	//set to true to log query
-	db.LogMode(true)
+	db.LogMode(false)
 
 	// if query params found, build query
 	if len(query) > 0 {
