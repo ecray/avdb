@@ -7,13 +7,21 @@
 $ make build
 $ ls -l release/avdb
 ```
-## Build container and run in docker compose
+## Build binary, container and run in docker-compose for dev environment
 ```
 $ make dev-env
+...
+db_1    | LOG:  database system is ready to accept connections
+db_1    | LOG:  autovacuum launcher started
+avdb_1  | 2018/12/28 19:56:09 Auto-migrating schema...
+avdb_1  | 2018/12/28 19:56:09 Checking token credential..
+avdb_1  | 2018/12/28 19:56:09 Initial token: NXSABjq0pDVENA9wlVfY5GF3BLJ1-3lwUG95QaPquk4=
+avdb_1  | 2018/12/28 19:56:09 Running on 0.0.0.0:3333
 ```
 
-## docker-compose should output initial token
+## Use token reported from docker-compose logs 
 ```
+$ export AVDB_TOKEN=NXSABjq0pDVENA9wlVfY5GF3BLJ1-3lwUG95QaPquk4=
 $ curl -s -X POST -H "Auth-Token: $AVDB_TOKEN" http://127.0.0.1:3333/api/v1/hosts/tacotruck01 -d '{"comidas":"tacos"}' | jq '.'
 $ curl -s -X GET http://127.0.0.1:3333/api/v1/hosts | jq '.'
 ```

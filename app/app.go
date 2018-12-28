@@ -55,6 +55,7 @@ func (a *App) Run(host string) {
 
 	// Log and Serve
 	logged := gh.LoggingHandler(os.Stdout, a.Router)
+	log.Printf("Running on %s", host)
 	http.ListenAndServe(host, logged)
 }
 

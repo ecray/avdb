@@ -52,6 +52,5 @@ func server(c *cli.Context) {
 	}
 
 	a := &app.App{}
-	log.Println("Running on %s", conn)
 	a.Run(conn)
 }
