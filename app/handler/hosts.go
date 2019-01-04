@@ -78,7 +78,7 @@ func DeleteHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if host == nil {
 		return
 	}
-	if err := db.Delete(&host).Error; err != nil {
+	if err := db.Unscoped().Delete(&host).Error; err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
