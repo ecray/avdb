@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "avdb"
 	app.Usage = "Ansible Variables Database"
-	app.Version = "0.1.2"
+	app.Version = "0.1.3"
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Eric Raymond",

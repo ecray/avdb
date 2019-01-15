@@ -14,8 +14,8 @@ import (
 )
 
 type Request struct {
-	Data  map[string]string `json:"data"`
-	Hosts []string          `json:"hosts"`
+	Data  map[string]interface{} `json:"data"`
+	Hosts []string               `json:"hosts",omitempty`
 }
 
 func CreateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
@@ -139,7 +139,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	for _, v := range data.Hosts {
 		// Get data from response
 		if v == "" {
-			log.Println("Found invalid data in request")
+			log.Println("Found empty data in request")
 			break
 		}
 		ok := sliceContains(v, group.Hosts)

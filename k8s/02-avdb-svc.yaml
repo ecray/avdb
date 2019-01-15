@@ -7,10 +7,13 @@ metadata:
   namespace: avdb
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:iam::XXXX:server-certificate/my-cert"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "*"
 spec:
   ports:
   - name: avdb
-    port: 80
+    port: 443
     targetPort: 3333
   selector:
     app: avdb

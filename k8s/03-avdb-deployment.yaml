@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: avdb
-        image: docker.marqeta.com/mq/devops/avdb:latest
+        image: avdb:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3333
