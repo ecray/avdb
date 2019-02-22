@@ -19,8 +19,6 @@ func CreateTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		Host string `json:"host"`
 	}
 
-	//db.LogMode(true)
-
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
@@ -51,9 +49,8 @@ func CreateTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 func GetAllTags(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	tags := []model.Tag{}
 	query := r.URL.Query()
-	//db.LogMode(true)
 	var results []string
-	fmt.Println(query.Get("host"))
+
 	// if host query
 	if len(query) > 0 {
 		db.Where("host = ?", query.Get("host")).Find(&tags)
@@ -73,9 +70,6 @@ func GetTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	name := vars["name"]
 	tags := []model.Tag{}
 	var results []string
-
-	// debug queries
-	//db.LogMode(true)
 
 	// Search for tag and populate results
 	db.Model(&model.Tag{}).Where("tag = ?", name).Find(&tags)
@@ -98,8 +92,6 @@ func DeleteTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Host string `json:"host"`
 	}
-
-	//db.LogMode(true)
 
 	// Unpack body to get host
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
