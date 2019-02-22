@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -42,4 +43,40 @@ func queryBuilder(strs url.Values) string {
 		i++
 	}
 	return sb.String()
+}
+
+func sliceContains(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func debugBody(data *Request) {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "    ")
+	enc.Encode(data)
+}
+
+// this removes hosts when entry has -, ie -web02
+func removeByDash(o []string, s string) []string {
+	s = strings.TrimLeft(s, "-")
+
+	// get index in original
+	idx := findIndex(o, s)
+
+	// delete from original
+	o[len(o)-1], o[idx] = o[idx], o[len(o)-1]
+	return o[:len(o)-1]
+}
+
+func findIndex(s []string, x string) int {
+	for i, z := range s {
+		if x == z {
+			return i
+		}
+	}
+	return len(s)
 }

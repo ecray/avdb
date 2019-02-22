@@ -75,6 +75,11 @@ func (a *App) setRouters() {
 	a.Post("/api/v1/groups/{name}", mwauth(a.CreateGroup, a.DB))
 	a.Put("/api/v1/groups/{name}", mwauth(a.UpdateGroup, a.DB))
 	a.Delete("/api/v1/groups/{name}", mwauth(a.DeleteGroup, a.DB))
+	// Routing for tag functions
+	a.Get("/api/v1/tags", a.getAllTags)
+	a.Get("/api/v1/tags/{name}", a.getTag)
+	a.Post("/api/v1/tags/{name}", mwauth(a.createTag, a.DB))
+	a.Delete("/api/v1/tags/{name}", mwauth(a.deleteTag, a.DB))
 }
 
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -133,4 +138,21 @@ func (a *App) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	handler.UpdateGroup(a.DB, w, r)
+}
+
+// Tag handlers
+func (a *App) getAllTags(w http.ResponseWriter, r *http.Request) {
+	handler.GetAllTags(a.DB, w, r)
+}
+
+func (a *App) createTag(w http.ResponseWriter, r *http.Request) {
+	handler.CreateTag(a.DB, w, r)
+}
+
+func (a *App) getTag(w http.ResponseWriter, r *http.Request) {
+	handler.GetTag(a.DB, w, r)
+}
+
+func (a *App) deleteTag(w http.ResponseWriter, r *http.Request) {
+	handler.DeleteTag(a.DB, w, r)
 }

@@ -3,14 +3,14 @@ package handler
 import (
 	"encoding/json"
 	_ "fmt"
-	"github.com/ecray/avdb/app/model"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
+
+	"github.com/ecray/avdb/app/model"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 type Request struct {
@@ -18,6 +18,7 @@ type Request struct {
 	Hosts []string               `json:"hosts",omitempty`
 }
 
+// CreateGroup ...
 func CreateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	group := model.Group{}
@@ -49,12 +50,12 @@ func CreateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusCreated, group)
 }
 
+// GetAllGroups ...
 func GetAllGroups(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	groups := []model.Group{}
 	query := r.URL.Query()
-	log.Println(query)
 	//set to true to log query
-	db.LogMode(false)
+	//db.LogMode(false)
 
 	// if query params found, build query
 	if len(query) > 0 {
@@ -65,6 +66,7 @@ func GetAllGroups(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, groups)
 }
 
+// GetGroup ...
 func GetGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -76,6 +78,7 @@ func GetGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, group)
 }
 
+// DeleteGroup ...
 func DeleteGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -91,6 +94,7 @@ func DeleteGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusNoContent, nil)
 }
 
+// UpdateGroup ...
 func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -103,8 +107,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 	// decode response data into map
 	var data *Request
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		log.Println("Failed response decode: ", err, r.Body)
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
@@ -116,8 +119,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 	// convert original group data to map to iterate
 	origin := make(map[string]interface{})
-	err = json.Unmarshal(group.Data.RawMessage, &origin)
-	if err != nil {
+	if err := json.Unmarshal(group.Data.RawMessage, &origin); err != nil {
 		log.Println("error", err)
 	}
 
@@ -139,7 +141,7 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	for _, v := range data.Hosts {
 		// Get data from response
 		if v == "" {
-			log.Println("Found empty data in request")
+			// OK to not have groups in request
 			break
 		}
 		ok := sliceContains(v, group.Hosts)
@@ -155,10 +157,14 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert back to model
-	group.Data.RawMessage, err = json.Marshal(&origin)
+	var b []byte
+	b, err := json.Marshal(&origin)
 	if err != nil {
 		log.Printf("failed to marshal")
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
+	group.Data.RawMessage = b
 
 	if err := db.Save(&group).Error; err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -169,46 +175,9 @@ func UpdateGroup(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func getGroupOr404(db *gorm.DB, name string, w http.ResponseWriter, r *http.Request) *model.Group {
 	group := model.Group{}
-	err := db.Where(model.Group{Name: name}).Find(&group).Error
-	if err != nil {
+	if err := db.Where(model.Group{Name: name}).Find(&group).Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
 	return &group
-}
-
-func sliceContains(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
-func debugBody(data *Request) {
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-	enc.Encode(data)
-}
-
-// this removes hosts when entry has -, ie -web02
-func removeByDash(o []string, s string) []string {
-	s = strings.TrimLeft(s, "-")
-
-	// get index in original
-	idx := findIndex(o, s)
-
-	// delete from original
-	o[len(o)-1], o[idx] = o[idx], o[len(o)-1]
-	return o[:len(o)-1]
-}
-
-func findIndex(s []string, x string) int {
-	for i, z := range s {
-		if x == z {
-			return i
-		}
-	}
-	return len(s)
 }

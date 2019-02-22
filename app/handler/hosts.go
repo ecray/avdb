@@ -2,17 +2,17 @@ package handler
 
 import (
 	"encoding/json"
-	_ "fmt"
-	"github.com/ecray/avdb/app/model"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"io"
 	"log"
 	"net/http"
-	_ "os"
 	"strings"
+
+	"github.com/ecray/avdb/app/model"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
+// CreateHost ...
 func CreateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	host := model.Host{}
@@ -45,6 +45,7 @@ func CreateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusCreated, host)
 }
 
+// GetAllHosts ...
 func GetAllHosts(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	hosts := []model.Host{}
 	query := r.URL.Query()
@@ -59,6 +60,7 @@ func GetAllHosts(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, hosts)
 }
 
+// GetHost ...
 func GetHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -70,6 +72,7 @@ func GetHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, host)
 }
 
+// DeleteHost ...
 func DeleteHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -85,6 +88,7 @@ func DeleteHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusNoContent, nil)
 }
 
+// UpdateHost
 func UpdateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -97,22 +101,19 @@ func UpdateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 	// decode response data into map
 	data := make(map[string]interface{})
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		log.Println("Failed: ", err, r.Body)
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer r.Body.Close()
 
-	/* enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-	enc.Encode(data) */
+	// debugging body data
+	/* enc := json.NewEncoder(os.Stdout).SetIndent("", "    ").Encode(data) */
 
 	// convert original host data to map to parse
 	origin := make(map[string]interface{})
-	err = json.Unmarshal(host.Data.RawMessage, &origin)
-	if err != nil {
+	if err := json.Unmarshal(host.Data.RawMessage, &origin); err != nil {
 		log.Println("error", err)
 	}
 	/* Update origin with new data, and cull out nil kv
@@ -132,10 +133,14 @@ func UpdateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert back to model
-	host.Data.RawMessage, err = json.Marshal(&origin)
+	var b []byte
+	b, err := json.Marshal(&origin)
 	if err != nil {
 		log.Printf("failed to marshal")
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
+	host.Data.RawMessage = b
 
 	if err := db.Save(&host).Error; err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -146,8 +151,7 @@ func UpdateHost(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func getHostOr404(db *gorm.DB, name string, w http.ResponseWriter, r *http.Request) *model.Host {
 	host := model.Host{}
-	err := db.First(&host, model.Host{Name: name}).Error
-	if err != nil {
+	if err := db.First(&host, model.Host{Name: name}).Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}

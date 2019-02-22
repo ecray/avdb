@@ -2,18 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/ecray/avdb/app"
-	"github.com/urfave/cli"
 	"log"
 	"net"
 	"os"
+
+	"github.com/ecray/avdb/app"
+	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "avdb"
 	app.Usage = "Ansible Variables Database"
-	app.Version = "0.1.3"
+	app.Version = "0.2.0"
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Eric Raymond",

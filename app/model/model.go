@@ -1,10 +1,11 @@
 package model
 
 import (
+	"log"
+
 	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/lib/pq"
-	"log"
 )
 
 type Auth struct {
@@ -25,9 +26,15 @@ type Group struct {
 	Hosts      pq.StringArray `gorm:"type:varchar(256)[]" json:"hosts,omitempty"`
 }
 
+type Tag struct {
+	gorm.Model `json:"-"`
+	Name       string `gorm:"column:tag;not null" json:"tag"`
+	Host       string `gorun:"column:host;not null" json:"host"`
+}
+
 // Create and migrate tables
 func DBMigrate(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&Host{}, &Group{}, &Auth{})
+	db.AutoMigrate(&Host{}, &Group{}, &Auth{}, &Tag{})
 	return db
 }
 
