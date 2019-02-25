@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/ecray/avdb/app/model"
 	"github.com/gorilla/mux"
@@ -25,21 +24,19 @@ func CreateTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+	// Fetch host record
+	host := getHostID(db, data.Host, w, r)
+
 	tag := model.Tag{
-		Name: vars["name"],
-		Host: data.Host,
+		Name:   vars["name"],
+		HostID: host.ID,
 	}
 
 	// Check for existing tag combo
 	// If match or not, save
-	db.Where("tag = ? AND host = ?", tag.Name, tag.Host).Find(&tag)
+	db.Where("tag = ? AND host_id = ?", tag.Name, tag.HostID).Find(&tag)
 	if err := db.Save(&tag).Error; err != nil {
-		switch {
-		case strings.Contains(err.Error(), "duplicate key value"):
-			respondError(w, http.StatusConflict, err.Error())
-		default:
-			respondError(w, http.StatusInternalServerError, err.Error())
-		}
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	respondJSON(w, http.StatusCreated, tag)
@@ -51,9 +48,16 @@ func GetAllTags(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	var results []string
 
-	// if host query
 	if len(query) > 0 {
-		db.Where("host = ?", query.Get("host")).Find(&tags)
+		// if host query
+		name := query.Get("host")
+		if name != "" {
+			host := getHostID(db, name, w, r)
+			db.Where("host_id = ?", host.ID).Find(&tags)
+		} else {
+			respondError(w, http.StatusNotImplemented, "Only host query supported")
+			return
+		}
 	} else {
 		db.Select("DISTINCT(tag)").Find(&tags)
 	}
@@ -68,16 +72,21 @@ func GetAllTags(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 func GetTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
-	tags := []model.Tag{}
+	type temp struct {
+		Host string
+	}
+	var temps []temp
 	var results []string
 
 	// Search for tag and populate results
-	db.Model(&model.Tag{}).Where("tag = ?", name).Find(&tags)
-	if len(tags) == 0 {
+	// GORM bug with Raw, Rows keeps giving 0 results
+	// short term - move to plain SQL
+	db.Raw("SELECT hosts.host FROM tags INNER JOIN hosts ON tags.host_id = hosts.id WHERE tag = ?", name).Scan(&temps)
+	if len(temps) == 0 {
 		respondError(w, http.StatusNotFound, fmt.Sprint("No Record Found For ", name))
 		return
 	}
-	for _, t := range tags {
+	for _, t := range temps {
 		results = append(results, t.Host)
 	}
 	respondJSON(w, http.StatusOK, results)
@@ -100,14 +109,28 @@ func DeleteTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := db.Where("tag = ? AND host = ?", name, data.Host).First(&tag).Error; err != nil {
+	// Fetch host record
+	host := getHostID(db, data.Host, w, r)
+
+	// Fetch record
+	if err := db.Where("tag = ? AND host_id = ?", name, host.ID).First(&tag).Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
+	// Delete record
 	if err := db.Unscoped().Delete(&tag).Error; err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	respondJSON(w, http.StatusNoContent, "")
+}
+
+func getHostID(db *gorm.DB, name string, w http.ResponseWriter, r *http.Request) *model.Host {
+	host := model.Host{}
+	if err := db.First(&host, model.Host{Name: name}).Error; err != nil {
+		respondError(w, http.StatusNotFound, fmt.Sprint("No Record Found For ", name))
+		return nil
+	}
+	return &host
 }

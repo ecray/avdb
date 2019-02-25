@@ -29,7 +29,8 @@ type Group struct {
 type Tag struct {
 	gorm.Model `json:"-"`
 	Name       string `gorm:"column:tag;not null" json:"tag"`
-	Host       string `gorun:"column:host;not null" json:"host"`
+	HostID     uint
+	//Host       string `gorun:"column:host;not null" json:"host"`
 }
 
 // Create and migrate tables
