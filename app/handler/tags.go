@@ -13,7 +13,7 @@ import (
 // CreateTag ...
 func CreateTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	//tag := model.Tag{}
+
 	var data struct {
 		Host string `json:"host"`
 	}
@@ -24,8 +24,12 @@ func CreateTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// Fetch host record
-	host := getHostID(db, data.Host, w, r)
+	// Check host exists before creating
+	host := getHostOr404(db, data.Host, w, r)
+	if host == nil {
+		respondError(w, http.StatusNotFound, fmt.Sprint("No Record Found For ", host))
+		return
+	}
 
 	tag := model.Tag{
 		Name:   vars["name"],
@@ -52,7 +56,7 @@ func GetAllTags(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		// if host query
 		name := query.Get("host")
 		if name != "" {
-			host := getHostID(db, name, w, r)
+			host := getHostOr404(db, name, w, r)
 			db.Where("host_id = ?", host.ID).Find(&tags)
 		} else {
 			respondError(w, http.StatusNotImplemented, "Only host query supported")
@@ -110,7 +114,7 @@ func DeleteTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// Fetch host record
-	host := getHostID(db, data.Host, w, r)
+	host := getHostOr404(db, data.Host, w, r)
 
 	// Fetch record
 	if err := db.Where("tag = ? AND host_id = ?", name, host.ID).First(&tag).Error; err != nil {
@@ -124,13 +128,4 @@ func DeleteTag(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respondJSON(w, http.StatusNoContent, "")
-}
-
-func getHostID(db *gorm.DB, name string, w http.ResponseWriter, r *http.Request) *model.Host {
-	host := model.Host{}
-	if err := db.First(&host, model.Host{Name: name}).Error; err != nil {
-		respondError(w, http.StatusNotFound, fmt.Sprint("No Record Found For ", name))
-		return nil
-	}
-	return &host
 }

@@ -23,11 +23,11 @@ type App struct {
 func (a *App) Run(host string) {
 	var db *gorm.DB
 	var err error
-	var dur int = 5
+	var dur int = 10
 
 	// Set up db connection with retries
 	connString := os.ExpandEnv("host=${DB_HOST} port=${DB_PORT} user=${DB_USER} dbname=${DB_NAME} sslmode=disable password=${DB_PASS}")
-	// DB connectivity check every 5 seconds, total 25 seconds
+	// DB connectivity check every 10 seconds, total 50 seconds
 	for i := 5; i > 0; i-- {
 		db, err = gorm.Open("postgres", connString)
 		if err != nil && i == 0 {
@@ -63,6 +63,8 @@ func (a *App) setRouters() {
 	// set up auth middleware
 	mwauth := middleware.BasicAuth
 
+	// Health-checking
+	a.Get("/healthz", a.GetHealth)
 	// Routing for host functions
 	a.Get("/api/v1/hosts", a.GetAllHosts)
 	a.Get("/api/v1/hosts/{name}", a.GetHost)
@@ -76,12 +78,13 @@ func (a *App) setRouters() {
 	a.Put("/api/v1/groups/{name}", mwauth(a.UpdateGroup, a.DB))
 	a.Delete("/api/v1/groups/{name}", mwauth(a.DeleteGroup, a.DB))
 	// Routing for tag functions
-	a.Get("/api/v1/tags", a.getAllTags)
-	a.Get("/api/v1/tags/{name}", a.getTag)
-	a.Post("/api/v1/tags/{name}", mwauth(a.createTag, a.DB))
-	a.Delete("/api/v1/tags/{name}", mwauth(a.deleteTag, a.DB))
+	a.Get("/api/v1/tags", a.GetAllTags)
+	a.Get("/api/v1/tags/{name}", a.GetTag)
+	a.Post("/api/v1/tags/{name}", mwauth(a.CreateTag, a.DB))
+	a.Delete("/api/v1/tags/{name}", mwauth(a.DeleteTag, a.DB))
 }
 
+// Generic handlers
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("GET")
 }
@@ -141,18 +144,23 @@ func (a *App) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 // Tag handlers
-func (a *App) getAllTags(w http.ResponseWriter, r *http.Request) {
+func (a *App) GetAllTags(w http.ResponseWriter, r *http.Request) {
 	handler.GetAllTags(a.DB, w, r)
 }
 
-func (a *App) createTag(w http.ResponseWriter, r *http.Request) {
+func (a *App) CreateTag(w http.ResponseWriter, r *http.Request) {
 	handler.CreateTag(a.DB, w, r)
 }
 
-func (a *App) getTag(w http.ResponseWriter, r *http.Request) {
+func (a *App) GetTag(w http.ResponseWriter, r *http.Request) {
 	handler.GetTag(a.DB, w, r)
 }
 
-func (a *App) deleteTag(w http.ResponseWriter, r *http.Request) {
+func (a *App) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	handler.DeleteTag(a.DB, w, r)
+}
+
+// Health-checks
+func (a *App) GetHealth(w http.ResponseWriter, r *http.Request) {
+	handler.GetHealth(a.DB, w, r)
 }

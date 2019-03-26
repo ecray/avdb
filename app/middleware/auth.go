@@ -7,12 +7,9 @@ import (
 	"net/http"
 )
 
-//type middleware func(http.HandlerFunc) http.HandlerFunc
-
+// Basic Authentication checks for token in auths
 func BasicAuth(next http.HandlerFunc, db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s - %s %s", r.RemoteAddr, r.Method, r.RequestURI)
-
 		// get header/token, check model/db and validate
 		auth := model.Auth{}
 		token := r.Header.Get("Auth-Token")
