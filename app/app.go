@@ -47,7 +47,7 @@ func (a *App) Run(host string) {
 	log.Println("Checking token credential..")
 	model.PopulateAuth(a.DB)
 
-	// Create new router
+	// Create a traced mux router.
 	a.Router = mux.NewRouter()
 
 	// Set handlers
